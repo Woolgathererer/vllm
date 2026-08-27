@@ -1,0 +1,40 @@
+vllm/tokenizers/detokenizer_utils.py
+  s_1099314d903495::t_e3d76693cc00e8 69
+  s_1099314d903495::t_b72d7d529cd0ed 160-161
+  s_1099314d903495::t_b5312f21acc789 65-68,70
+  s_1099314d903495::t_121a6590efbb24 149-159,162-168,191,194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "54ff307bddef82ed41639a8270480ea81cc9a55e",
+  "prompts": {},
+  "humans": {
+    "h_9d341c1e8858cb": {
+      "author": "gongyanlin <gongyanlin@gongyanlindeMacBook-Pro.local>"
+    }
+  },
+  "sessions": {
+    "s_1099314d903495": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a901c5f9f936b41dfd56bc0",
+        "model": "glm-5.3"
+      },
+      "human_author": "gongyanlin <gongyanlin@gongyanlindeMacBook-Pro.local>",
+      "custom_attributes": {
+        "source_scene": "unknown",
+        "edit_kind": "file_edit",
+        "tool_type": "agent",
+        "runtime_client": "trae-tob-git-ai",
+        "external_session_id": "6a901c5f9f936b41dfd56bc0",
+        "dedupe_key": "6a901c5f9f936b41dfd56bc0:6a90313a9f936b41dfd57082:afterEdit:6f3ddd32",
+        "client_type": "ide",
+        "session_id": "6a901c5f9f936b41dfd56bc0",
+        "tool_use_id": "6a90313a9f936b41dfd57082",
+        "tool_id": "SearchReplace",
+        "operation_id": "6a90313a9f936b41dfd57082"
+      }
+    }
+  }
+}

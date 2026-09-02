@@ -1,0 +1,38 @@
+tests/model_executor/test_weight_utils.py
+  s_96c9aaf2816970::t_84c76b6f0d9357 8
+  s_96c9aaf2816970::t_e1f611df503fa8 285-291,297,307-312,317,322-328,334-342,345-352,355-356
+  s_96c9aaf2816970::t_5ccc13b9af394e 292-296,298-306,313-316,318,329-333,343-344,353-354
+  s_96c9aaf2816970::t_65db153b2519d5 319-321
+vllm/model_executor/model_loader/weight_utils.py
+  s_96c9aaf2816970::t_2ae5acb765f7f4 1368-1384
+  s_96c9aaf2816970::t_cb7663f6ba3a08 1317-1321
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "f4ddece99fcc89ae7c846b9cb0c7b1184fcd1eca",
+  "prompts": {},
+  "sessions": {
+    "s_96c9aaf2816970": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a9038619f936b41dfd5710b",
+        "model": "glm-5.3"
+      },
+      "human_author": "gongyanlin <gongyanlin@gongyanlindeMacBook-Pro.local>",
+      "custom_attributes": {
+        "edit_kind": "file_edit",
+        "session_id": "6a9038619f936b41dfd5710b",
+        "client_type": "ide",
+        "runtime_client": "trae-tob-git-ai",
+        "tool_type": "agent",
+        "source_scene": "unknown",
+        "external_session_id": "6a9038619f936b41dfd5710b",
+        "tool_use_id": "6a98172e54122a2e0f348be7",
+        "tool_id": "SearchReplace",
+        "operation_id": "6a98172e54122a2e0f348be7",
+        "dedupe_key": "6a9038619f936b41dfd5710b:6a98172e54122a2e0f348be7:afterEdit:d1a4e142"
+      }
+    }
+  }
+}

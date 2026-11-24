@@ -9,12 +9,16 @@ from unittest.mock import Mock
 import numpy as np
 import pybase64 as base64
 import pytest
+from pydantic import TypeAdapter
 
 from vllm.config import ModelConfig, PoolerConfig
 from vllm.entrypoints.pooling.embed.protocol import (
+    MAX_EMBEDDING_INPUTS,
     EmbeddingCompletionRequest,
+    EmbeddingRequest,
     build_typed_embeddings,
 )
+from vllm.exceptions import VLLMValidationError
 from vllm.renderers import TokenizeParams
 
 
@@ -166,6 +170,69 @@ class TestBuildTypedEmbeddingsMultiple:
     def test_unknown_type_ignored(self, sample_embeddings: list[list[float]]):
         result = build_typed_embeddings(sample_embeddings, ["float", "unknown_type"])
         assert result.float is not None
+
+
+@pytest.mark.parametrize(
+    "inputs",
+    [
+        ["text"] * MAX_EMBEDDING_INPUTS,
+        [[1, 2, 3]] * MAX_EMBEDDING_INPUTS,
+        [[{"role": "user", "content": "text"}]] * MAX_EMBEDDING_INPUTS,
+    ],
+    ids=["strings", "token-sequences", "chat-conversations"],
+)
+def test_embedding_request_accepts_maximum_batch(inputs):
+    request = TypeAdapter(EmbeddingRequest).validate_python(
+        {"model": "m", "input": inputs}
+    )
+    assert len(request.input) == MAX_EMBEDDING_INPUTS
+
+
+def test_embedding_request_accepts_maximum_messages_batch():
+    messages = [[{"role": "user", "content": "text"}]] * MAX_EMBEDDING_INPUTS
+    request = TypeAdapter(EmbeddingRequest).validate_python(
+        {"model": "m", "messages": messages}
+    )
+
+    assert len(request.messages) == MAX_EMBEDDING_INPUTS
+
+
+@pytest.mark.parametrize(
+    "inputs",
+    [
+        ["text"] * (MAX_EMBEDDING_INPUTS + 1),
+        [[1, 2, 3]] * (MAX_EMBEDDING_INPUTS + 1),
+        [[{"role": "user", "content": "text"}]] * (MAX_EMBEDDING_INPUTS + 1),
+    ],
+    ids=["strings", "token-sequences", "chat-conversations"],
+)
+def test_embedding_request_rejects_oversized_batch(inputs):
+    with pytest.raises(
+        VLLMValidationError, match="maximum number of embedding inputs"
+    ) as exc_info:
+        TypeAdapter(EmbeddingRequest).validate_python({"model": "m", "input": inputs})
+
+    assert exc_info.value.parameter == "input"
+
+
+def test_embedding_request_rejects_oversized_messages_batch():
+    messages = [[{"role": "user", "content": "text"}]] * (MAX_EMBEDDING_INPUTS + 1)
+    with pytest.raises(
+        VLLMValidationError, match="maximum number of embedding inputs"
+    ) as exc_info:
+        TypeAdapter(EmbeddingRequest).validate_python(
+            {"model": "m", "messages": messages}
+        )
+
+    assert exc_info.value.parameter == "input"
+
+
+def test_embedding_request_allows_single_token_sequence_over_batch_limit():
+    request = TypeAdapter(EmbeddingRequest).validate_python(
+        {"model": "m", "input": list(range(MAX_EMBEDDING_INPUTS + 1))}
+    )
+
+    assert len(request.input) == MAX_EMBEDDING_INPUTS + 1
 
 
 def _embedding_model_config(

@@ -26,6 +26,7 @@ from pydantic import (
 
 from vllm import PoolingParams
 from vllm.entrypoints.serve.engine.protocol import OpenAIBaseModel, UsageInfo
+from vllm.exceptions import VLLMValidationError
 from vllm.renderers.chat_utils import ChatCompletionMessageParam
 from vllm.utils import random_uuid
 
@@ -38,6 +39,8 @@ from ..base.protocol import (
     PoolingBasicRequestMixin,
     reject_removed_pooling_parameters,
 )
+
+MAX_EMBEDDING_INPUTS = 2048
 
 
 class EmbeddingCompletionRequest(
@@ -170,6 +173,25 @@ _CHAT_ONLY_FIELDS = frozenset(EmbeddingChatRequest.model_fields).difference(
 
 
 def _validate_embedding_request(data: Any, handler: ValidatorFunctionWrapHandler):
+    if isinstance(data, dict):
+        inputs = data.get("input")
+        is_input_batch = (
+            isinstance(inputs, list)
+            and bool(inputs)
+            and isinstance(inputs[0], (str, list))
+        )
+        messages = data.get("messages")
+        is_messages_batch = _is_batched_chat_messages(messages)
+        num_inputs = (
+            len(inputs) if is_input_batch else len(messages) if is_messages_batch else 0
+        )
+        if num_inputs > MAX_EMBEDDING_INPUTS:
+            raise VLLMValidationError(
+                f"The maximum number of embedding inputs is "
+                f"{MAX_EMBEDDING_INPUTS}, but received {num_inputs}.",
+                parameter="input",
+            )
+
     # Smart-mode union validation tries every member, and the chat members are
     # slow to reject plain inputs, so try the completion request first when no
     # chat member could accept the body.

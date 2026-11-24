@@ -18,7 +18,10 @@ from tests.models.language.pooling.embed_utils import (
 )
 from tests.models.utils import check_embeddings_close
 from tests.utils import RemoteOpenAIServer
-from vllm.entrypoints.pooling.embed.protocol import EmbeddingResponse
+from vllm.entrypoints.pooling.embed.protocol import (
+    MAX_EMBEDDING_INPUTS,
+    EmbeddingResponse,
+)
 from vllm.entrypoints.pooling.pooling.protocol import PoolingResponse
 from vllm.entrypoints.pooling.utils import (
     MetadataItem,
@@ -102,6 +105,22 @@ async def test_negative_token_ids(client: openai.AsyncOpenAI, model_name: str):
     # non-negative, so the request reaches the shared engine-level validation.
     with pytest.raises(openai.BadRequestError, match=".*out of vocabulary.*"):
         await client.embeddings.create(model=model_name, input=[-1])
+
+
+@pytest.mark.parametrize("model_name", [MODEL_NAME])
+def test_oversized_input_batch_is_rejected(server: RemoteOpenAIServer, model_name: str):
+    response = requests.post(
+        server.url_for("/v1/embeddings"),
+        json={
+            "model": model_name,
+            "input": ["batch limit probe"] * (MAX_EMBEDDING_INPUTS + 1),
+        },
+    )
+
+    assert response.status_code == 400
+    error = response.json()["error"]
+    assert error["type"] == "BadRequestError"
+    assert "maximum number of embedding inputs" in error["message"]
 
 
 @pytest.mark.asyncio
